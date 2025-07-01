@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -53,7 +52,7 @@ export const PromptEditor = ({ agentId, onChange }: PromptEditorProps) => {
     .replace(/{discount_active}/g, "Sí");
 
   const copyPrompt = () => {
-    navigator.clipboard.writeTextwm(showPreview ? resolvedPrompt : prompt);
+    navigator.clipboard.writeText(showPreview ? resolvedPrompt : prompt);
     toast({
       title: "Copiado",
       description: "El prompt se ha copiado al portapapeles.",
