@@ -204,6 +204,23 @@ const renderPromptWithHighlighting = (prompt: string, config: typeof mockAgentCo
   );
 };
 
+const renderPromptWithVariableHighlighting = (prompt: string): JSX.Element => {
+  // Highlight variables in the raw prompt text (for editor view)
+  const highlightedPrompt = prompt.replace(
+    /\{[^}]+\}/g, 
+    (match) => `<span class="variable-placeholder">${match}</span>`
+  );
+
+  return (
+    <div 
+      className="whitespace-pre-wrap font-mono text-sm"
+      dangerouslySetInnerHTML={{ 
+        __html: highlightedPrompt
+      }}
+    />
+  );
+};
+
 export const PromptEditor = ({ agentId, onChange, tools = [] }: PromptEditorProps) => {
   const [customPrompt, setCustomPrompt] = useState("");
   const [useSystemGenerated, setUseSystemGenerated] = useState(true);
@@ -242,6 +259,13 @@ export const PromptEditor = ({ agentId, onChange, tools = [] }: PromptEditorProp
     <>
       <style>{`
         .variable {
+          background-color: #dcfce7;
+          color: #16a34a;
+          padding: 2px 4px;
+          border-radius: 4px;
+          font-weight: 500;
+        }
+        .variable-placeholder {
           background-color: #dcfce7;
           color: #16a34a;
           padding: 2px 4px;
@@ -342,9 +366,13 @@ export const PromptEditor = ({ agentId, onChange, tools = [] }: PromptEditorProp
               <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 min-h-[400px] max-h-[600px] overflow-y-auto">
                 {renderPromptWithHighlighting(finalPrompt, mockAgentConfig)}
               </div>
-            ) : showPreview || useSystemGenerated ? (
+            ) : showPreview ? (
               <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 min-h-[400px] max-h-[600px] overflow-y-auto font-mono text-sm whitespace-pre-wrap">
                 {finalPrompt}
+              </div>
+            ) : useSystemGenerated ? (
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 min-h-[400px] max-h-[600px] overflow-y-auto">
+                {renderPromptWithVariableHighlighting(finalPrompt)}
               </div>
             ) : (
               <Textarea
@@ -357,7 +385,7 @@ export const PromptEditor = ({ agentId, onChange, tools = [] }: PromptEditorProp
           </div>
 
           {/* Legend for variables */}
-          {showPreview && useSystemGenerated && (
+          {(showPreview && useSystemGenerated) || (!showPreview && useSystemGenerated) ? (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
               <div className="flex items-start gap-2">
                 <FileText className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
@@ -365,7 +393,7 @@ export const PromptEditor = ({ agentId, onChange, tools = [] }: PromptEditorProp
                   <p className="font-medium mb-1">Leyenda de colores:</p>
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="inline-block w-4 h-4 bg-blue-100 border border-blue-300 rounded"></span>
+                      <span className="inline-block w-4 h-4 bg-green-100 border border-green-300 rounded"></span>
                       <span>Variables editables en Prompt Blocks</span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -376,7 +404,7 @@ export const PromptEditor = ({ agentId, onChange, tools = [] }: PromptEditorProp
                 </div>
               </div>
             </div>
-          )}
+          ) : null}
 
           {/* Tips */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
@@ -389,7 +417,7 @@ export const PromptEditor = ({ agentId, onChange, tools = [] }: PromptEditorProp
                 {useSystemGenerated ? (
                   <p className="text-blue-700">
                     Este prompt se genera automáticamente basado en la configuración del agente. 
-                    Las variables en azul se editan en "Configuración del Agente" y las herramientas 
+                    Las variables en verde se editan en "Configuración del Agente" y las herramientas 
                     se activan/desactivan en "Herramientas".
                   </p>
                 ) : (
