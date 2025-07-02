@@ -240,7 +240,7 @@ export const PromptEditor = ({ agentId, onChange, tools = [] }: PromptEditorProp
 
   return (
     <>
-      <style jsx>{`
+      <style>{`
         .variable {
           background-color: #dbeafe;
           color: #1d4ed8;
