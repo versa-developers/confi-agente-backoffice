@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -24,6 +23,15 @@ interface Agent {
   status: "active" | "inactive";
 }
 
+interface Tool {
+  id: string;
+  name: string;
+  description: string;
+  type: "native" | "custom";
+  enabled: boolean;
+  category: "products" | "cart" | "orders" | "support" | "media" | "policies";
+}
+
 interface AgentEditorProps {
   seller: Seller;
   onBack: () => void;
@@ -38,6 +46,7 @@ const mockAgents: Agent[] = [
 export const AgentEditor = ({ seller, onBack }: AgentEditorProps) => {
   const [selectedAgent, setSelectedAgent] = useState(mockAgents[0].id);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [agentTools, setAgentTools] = useState<Tool[]>([]);
   const { toast } = useToast();
 
   const currentAgent = mockAgents.find(agent => agent.id === selectedAgent);
@@ -56,6 +65,11 @@ export const AgentEditor = ({ seller, onBack }: AgentEditorProps) => {
       description: "Se ha restaurado la configuración base del agente.",
     });
     setHasUnsavedChanges(false);
+  };
+
+  const handleToolsChange = (tools: Tool[]) => {
+    setAgentTools(tools);
+    setHasUnsavedChanges(true);
   };
 
   return (
@@ -132,6 +146,7 @@ export const AgentEditor = ({ seller, onBack }: AgentEditorProps) => {
                   <PromptEditor
                     agentId={agent.id}
                     onChange={() => setHasUnsavedChanges(true)}
+                    tools={agentTools}
                   />
                 </div>
 
@@ -140,6 +155,7 @@ export const AgentEditor = ({ seller, onBack }: AgentEditorProps) => {
                   <ToolsManager
                     agentId={agent.id}
                     onChange={() => setHasUnsavedChanges(true)}
+                    onToolsChange={handleToolsChange}
                   />
                 </div>
               </div>

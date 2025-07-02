@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -20,6 +19,7 @@ interface Tool {
 interface ToolsManagerProps {
   agentId: string;
   onChange: () => void;
+  onToolsChange?: (tools: Tool[]) => void;
 }
 
 const nativeTools: Tool[] = [
@@ -163,15 +163,23 @@ const categoryLabels = {
   policies: "Políticas"
 };
 
-export const ToolsManager = ({ agentId, onChange }: ToolsManagerProps) => {
+export const ToolsManager = ({ agentId, onChange, onToolsChange }: ToolsManagerProps) => {
   const [tools, setTools] = useState<Tool[]>(nativeTools);
   const [showCustomToolModal, setShowCustomToolModal] = useState(false);
   const { toast } = useToast();
 
+  // Notify parent component when tools change
+  useEffect(() => {
+    if (onToolsChange) {
+      onToolsChange(tools);
+    }
+  }, [tools, onToolsChange]);
+
   const toggleTool = (toolId: string) => {
-    setTools(tools.map(tool => 
+    const updatedTools = tools.map(tool => 
       tool.id === toolId ? { ...tool, enabled: !tool.enabled } : tool
-    ));
+    );
+    setTools(updatedTools);
     onChange();
     
     const tool = tools.find(t => t.id === toolId);

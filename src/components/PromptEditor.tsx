@@ -30,9 +30,12 @@ export const PromptEditor = ({ agentId, onChange, tools = [] }: PromptEditorProp
   const [localTools, setLocalTools] = useState<Tool[]>([]);
   const { toast } = useToast();
 
-  // Simulación de herramientas activas por defecto para testing
+  // Update local tools when tools prop changes
   useEffect(() => {
-    if (tools.length === 0) {
+    if (tools.length > 0) {
+      setLocalTools(tools);
+      console.log('Using tools from parent:', tools);
+    } else {
       // Si no se reciben tools del padre, usar herramientas mock para demostración
       const mockEnabledTools: Tool[] = [
         { id: "1", name: "Descripción Completa de Productos", enabled: true },
@@ -47,9 +50,6 @@ export const PromptEditor = ({ agentId, onChange, tools = [] }: PromptEditorProp
       ];
       setLocalTools(mockEnabledTools);
       console.log('Using mock tools because no tools received from parent:', mockEnabledTools);
-    } else {
-      setLocalTools(tools);
-      console.log('Using tools from parent:', tools);
     }
   }, [tools]);
 
