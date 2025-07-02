@@ -503,7 +503,7 @@ export const PromptBlocksEditor = ({ agentId, onChange }: PromptBlocksEditorProp
                 <Maximize className="h-4 w-4" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[800px] sm:max-w-[800px] overflow-y-auto">
+            <SheetContent side="left" className="w-[800px] sm:max-w-[800px] overflow-y-auto">
               <SheetHeader>
                 <SheetTitle className="text-xl font-semibold">
                   Configuración Completa del Agente
