@@ -152,7 +152,7 @@ export const PromptBlocksEditor = ({ agentId, onChange }: PromptBlocksEditorProp
   };
 
   const ConfigurationContent = () => (
-    <Accordion type="multiple" defaultValue={["personality"]} className="space-y-4">
+    <Accordion type="multiple" className="space-y-4">
       
           {/* 1. Personalidad del agente */}
           <AccordionItem value="personality" className="border rounded-lg px-4">
