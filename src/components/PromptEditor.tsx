@@ -242,8 +242,8 @@ export const PromptEditor = ({ agentId, onChange, tools = [] }: PromptEditorProp
     <>
       <style>{`
         .variable {
-          background-color: #dbeafe;
-          color: #1d4ed8;
+          background-color: #dcfce7;
+          color: #16a34a;
           padding: 2px 4px;
           border-radius: 4px;
           font-weight: 500;
