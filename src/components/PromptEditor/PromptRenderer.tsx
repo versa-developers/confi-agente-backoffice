@@ -75,6 +75,13 @@ export const renderPromptWithVariableHighlighting = (prompt: string, enabledTool
     `<span class="tools-section">${toolsList}</span>`
   );
 
+  // Colorear herramientas individuales que aparecen como líneas con "- " al inicio
+  // Esto maneja las herramientas que ya están renderizadas en el prompt
+  highlightedPrompt = highlightedPrompt.replace(
+    /^- (Descripción Completa de Productos|Generar Carrito de Compras|Agregar al Carrito Existente|Estado de Envío|Generar Ticket de Soporte|Estado de Ticket|Envío de Imágenes|Políticas Generales|Preguntas Frecuentes|Buscar Información de Productos|Productos Más Populares|Verificar Descuentos Globales|Buscar Orden por Email|Seguimiento de Compra|Alerta para Intervención Humana)$/gm,
+    (match, toolName) => `<span class="tool-item">- ${toolName}</span>`
+  );
+
   return (
     <div 
       className="whitespace-pre-wrap font-mono text-sm"
