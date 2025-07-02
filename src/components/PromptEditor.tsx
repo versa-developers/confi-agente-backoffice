@@ -169,7 +169,12 @@ DIRECTRICES ADICIONALES:
 Recuerda: Tu objetivo es brindar el mejor servicio al cliente y representar profesionalmente a {storeName}.`;
 };
 
-const renderPromptWithHighlighting = (prompt: string, config: typeof mockAgentConfig): JSX.Element => {
+const renderPromptWithHighlighting = (prompt: string, config: typeof mockAgentConfig, enabledTools: Tool[]): JSX.Element => {
+  // Crear lista de herramientas para reemplazo
+  const toolsList = enabledTools.length > 0 
+    ? enabledTools.map(tool => `- ${tool.name}`).join('\n')
+    : '- No hay herramientas disponibles';
+
   // Reemplazar variables con valores reales y aplicar colores
   let highlightedPrompt = prompt
     .replace(/{agentName}/g, `<span class="variable">${config.agentName}</span>`)
@@ -194,7 +199,8 @@ const renderPromptWithHighlighting = (prompt: string, config: typeof mockAgentCo
     .replace(/{coverageAreas}/g, `<span class="variable">${config.coverageAreas}</span>`)
     .replace(/{paymentMethods}/g, `<span class="variable">${config.paymentMethods}</span>`)
     .replace(/{paymentSecurity}/g, `<span class="variable">${config.paymentSecurity}</span>`)
-    .replace(/{faqs}/g, `<span class="variable">${config.faqs.map(faq => `**${faq.question}**\n${faq.answer}`).join('\n\n')}</span>`);
+    .replace(/{faqs}/g, `<span class="variable">${config.faqs.map(faq => `**${faq.question}**\n${faq.answer}`).join('\n\n')}</span>`)
+    .replace(/\$\{toolsList\}/g, `<span class="tools-list">${toolsList}</span>`);
 
   return (
     <div 
@@ -206,11 +212,22 @@ const renderPromptWithHighlighting = (prompt: string, config: typeof mockAgentCo
   );
 };
 
-const renderPromptWithVariableHighlighting = (prompt: string): JSX.Element => {
+const renderPromptWithVariableHighlighting = (prompt: string, enabledTools: Tool[]): JSX.Element => {
+  // Crear lista de herramientas para reemplazo
+  const toolsList = enabledTools.length > 0 
+    ? enabledTools.map(tool => `- ${tool.name}`).join('\n')
+    : '- No hay herramientas disponibles';
+
   // Highlight variables in the raw prompt text (for editor view)
-  const highlightedPrompt = prompt.replace(
+  let highlightedPrompt = prompt.replace(
     /\{[^}]+\}/g, 
     (match) => `<span class="variable-placeholder">${match}</span>`
+  );
+
+  // Replace tools list with highlighted version
+  highlightedPrompt = highlightedPrompt.replace(
+    /\$\{toolsList\}/g, 
+    `<span class="tools-list">${toolsList}</span>`
   );
 
   return (
@@ -267,6 +284,10 @@ export const PromptEditor = ({ agentId, onChange, tools = [] }: PromptEditorProp
         .variable-placeholder {
           color: #16a34a;
           font-weight: 600;
+        }
+        .tools-list {
+          color: #2563eb;
+          font-weight: 500;
         }
         .tool-enabled {
           background-color: #dcfce7;
@@ -360,7 +381,7 @@ export const PromptEditor = ({ agentId, onChange, tools = [] }: PromptEditorProp
             
             {showPreview && useSystemGenerated ? (
               <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 min-h-[400px] max-h-[600px] overflow-y-auto">
-                {renderPromptWithHighlighting(finalPrompt, mockAgentConfig)}
+                {renderPromptWithHighlighting(finalPrompt, mockAgentConfig, enabledTools)}
               </div>
             ) : showPreview ? (
               <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 min-h-[400px] max-h-[600px] overflow-y-auto font-mono text-sm whitespace-pre-wrap">
@@ -368,7 +389,7 @@ export const PromptEditor = ({ agentId, onChange, tools = [] }: PromptEditorProp
               </div>
             ) : useSystemGenerated ? (
               <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 min-h-[400px] max-h-[600px] overflow-y-auto">
-                {renderPromptWithVariableHighlighting(finalPrompt)}
+                {renderPromptWithVariableHighlighting(finalPrompt, enabledTools)}
               </div>
             ) : (
               <Textarea
@@ -393,7 +414,7 @@ export const PromptEditor = ({ agentId, onChange, tools = [] }: PromptEditorProp
                       <span>Variables editables en Prompt Blocks</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="inline-block w-4 h-4 bg-green-100 border border-green-300 rounded"></span>
+                      <span className="inline-block w-4 h-4 bg-blue-100 border border-blue-300 rounded"></span>
                       <span>Herramientas activas ({enabledTools.length} de {tools.length})</span>
                     </div>
                   </div>
