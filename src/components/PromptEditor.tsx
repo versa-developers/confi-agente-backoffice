@@ -246,8 +246,12 @@ export const PromptEditor = ({ agentId, onChange, tools = [] }: PromptEditorProp
   const [showPreview, setShowPreview] = useState(false);
   const { toast } = useToast();
 
-  // Filtrar solo herramientas habilitadas
+  // Filtrar solo herramientas habilitadas - esta es la línea clave que estaba causando el problema
   const enabledTools = tools.filter(tool => tool.enabled);
+  
+  // Debug: agregar console.log para verificar qué herramientas están llegando
+  console.log('Tools received in PromptEditor:', tools);
+  console.log('Enabled tools:', enabledTools);
   
   const systemPrompt = generateSystemPrompt(mockAgentConfig, enabledTools);
   const finalPrompt = useSystemGenerated ? systemPrompt : customPrompt;
