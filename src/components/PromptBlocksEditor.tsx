@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,7 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Plus, Trash2, User, Store, Shield, RefreshCw, Truck, CreditCard, HelpCircle } from "lucide-react";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
+import { Plus, Trash2, User, Store, Shield, RefreshCw, Truck, CreditCard, HelpCircle, Maximize } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface FAQ {
@@ -150,19 +150,9 @@ export const PromptBlocksEditor = ({ agentId, onChange }: PromptBlocksEditorProp
     updateConfig("faqs", config.faqs.filter(faq => faq.id !== id));
   };
 
-  return (
-    <Card className="h-fit bg-white/70 backdrop-blur-sm border-0 shadow-sm">
-      <CardHeader className="pb-4">
-        <CardTitle className="text-lg font-semibold text-gray-900">
-          Configuración del Agente
-        </CardTitle>
-        <CardDescription className="text-gray-600">
-          Personaliza la información y comportamiento del agente
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Accordion type="multiple" defaultValue={["personality"]} className="space-y-4">
-          
+  const ConfigurationContent = () => (
+    <Accordion type="multiple" defaultValue={["personality"]} className="space-y-4">
+      
           {/* 1. Personalidad del agente */}
           <AccordionItem value="personality" className="border rounded-lg px-4">
             <AccordionTrigger className="text-sm font-medium">
@@ -486,6 +476,47 @@ export const PromptBlocksEditor = ({ agentId, onChange }: PromptBlocksEditorProp
             </AccordionContent>
           </AccordionItem>
         </Accordion>
+  );
+
+  return (
+    <Card className="h-fit bg-white/70 backdrop-blur-sm border-0 shadow-sm">
+      <CardHeader className="pb-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="text-lg font-semibold text-gray-900">
+              Configuración del Agente
+            </CardTitle>
+            <CardDescription className="text-gray-600">
+              Personaliza la información y comportamiento del agente
+            </CardDescription>
+          </div>
+          
+          <Drawer>
+            <DrawerTrigger asChild>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="hover:bg-blue-50"
+                title="Expandir configuración"
+              >
+                <Maximize className="h-4 w-4" />
+              </Button>
+            </DrawerTrigger>
+            <DrawerContent className="max-h-[90vh]">
+              <DrawerHeader>
+                <DrawerTitle className="text-xl font-semibold">
+                  Configuración Completa del Agente
+                </DrawerTitle>
+              </DrawerHeader>
+              <div className="px-6 pb-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+                <ConfigurationContent />
+              </div>
+            </DrawerContent>
+          </Drawer>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <ConfigurationContent />
       </CardContent>
     </Card>
   );
