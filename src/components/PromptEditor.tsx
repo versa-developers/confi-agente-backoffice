@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -58,7 +57,7 @@ const mockAgentConfig = {
   // FAQs
   faqs: [
     { question: "¿Tienen garantía los productos?", answer: "Sí, todos nuestros productos incluyen garantía del fabricante de 12 meses" },
-    { question: "¿Puedo cambiar mi pedido después de comprarlo?", answer: "Puedes modificar tu pedido hasta 2 horas después de la compra contactándanos por WhatsApp" }
+    { question: "¿Puedo cambiar mi pedido después de comprarlo?", answer: "Puedes modificar tu pedido hasta 2 horas después de la compra contactándonos por WhatsApp" }
   ]
 };
 
@@ -259,18 +258,12 @@ export const PromptEditor = ({ agentId, onChange, tools = [] }: PromptEditorProp
     <>
       <style>{`
         .variable {
-          background-color: #dcfce7;
           color: #16a34a;
-          padding: 2px 4px;
-          border-radius: 4px;
-          font-weight: 500;
+          font-weight: 600;
         }
         .variable-placeholder {
-          background-color: #dcfce7;
           color: #16a34a;
-          padding: 2px 4px;
-          border-radius: 4px;
-          font-weight: 500;
+          font-weight: 600;
         }
         .tool-enabled {
           background-color: #dcfce7;
