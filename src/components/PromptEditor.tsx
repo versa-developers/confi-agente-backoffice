@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -80,7 +81,9 @@ const generateSystemPrompt = (config: typeof mockAgentConfig, enabledTools: Tool
   const baseStyleDescription = BASE_STYLE_DESCRIPTIONS[config.baseStyle as keyof typeof BASE_STYLE_DESCRIPTIONS] || '';
 
   // Generar lista de herramientas habilitadas
-  const toolsList = enabledTools.map(tool => `- ${tool.name}`).join('\n');
+  const toolsList = enabledTools.length > 0 
+    ? enabledTools.map(tool => `- ${tool.name}`).join('\n')
+    : '- No hay herramientas disponibles';
   
   return `Eres {agentName}, un agente de inteligencia artificial especializado en e-commerce. Tu propósito es asistir a los clientes de {storeName}.
 
@@ -128,7 +131,7 @@ INFORMACIÓN GENERAL DE LA TIENDA:
 **PREGUNTAS FRECUENTES:**
 {faqs}
 
-HERRAMIENTAS DISPONIBLES:
+**HERRAMIENTAS DISPONIBLES:**
 
 ${toolsList}
 
