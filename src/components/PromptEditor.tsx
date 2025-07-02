@@ -7,9 +7,16 @@ import { Badge } from "@/components/ui/badge";
 import { Eye, EyeOff, Copy, FileText, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
+interface Tool {
+  id: string;
+  name: string;
+  enabled: boolean;
+}
+
 interface PromptEditorProps {
   agentId: string;
   onChange: () => void;
+  tools?: Tool[];
 }
 
 // Configuration mock - en la implementación real vendría del estado del PromptBlocksEditor
@@ -63,7 +70,7 @@ const BASE_STYLE_DESCRIPTIONS = {
   'energetic_and_enthusiastic': 'Tu estilo debe ser muy animado y positivo. Usa exclamaciones y un lenguaje dinámico. Transmite entusiasmo real por ayudar y por los productos de la tienda.'
 };
 
-const generateSystemPrompt = (config: typeof mockAgentConfig): string => {
+const generateSystemPrompt = (config: typeof mockAgentConfig, enabledTools: Tool[]): string => {
   const today = new Date().toLocaleDateString('es-ES', { 
     weekday: 'long', 
     year: 'numeric', 
@@ -73,15 +80,18 @@ const generateSystemPrompt = (config: typeof mockAgentConfig): string => {
 
   const baseStyleDescription = BASE_STYLE_DESCRIPTIONS[config.baseStyle as keyof typeof BASE_STYLE_DESCRIPTIONS] || '';
 
-  return `Eres ${config.agentName}, un agente de inteligencia artificial especializado en e-commerce. Tu propósito es asistir a los clientes de ${config.storeName}.
+  // Generar lista de herramientas habilitadas
+  const toolsList = enabledTools.map(tool => `- ${tool.name}`).join('\n');
+  
+  return `Eres {agentName}, un agente de inteligencia artificial especializado en e-commerce. Tu propósito es asistir a los clientes de {storeName}.
 
-Tu saludo inicial debe ser: ${config.initialGreeting}
+Tu saludo inicial debe ser: {initialGreeting}
 
-Tu tono de conversación debe ser: ${config.tone}
+Tu tono de conversación debe ser: {tone}
 
-Tu estilo de conversación debe ser: ${baseStyleDescription}
+Tu estilo de conversación debe ser: {baseStyleDescription}
 
-Cuando lo veas necesario, puedes usar las siguientes frases que entregó el cliente en tus respuestas: ${config.characteristicPhrases}
+Cuando lo veas necesario, puedes usar las siguientes frases que entregó el cliente en tus respuestas: {characteristicPhrases}
 
 Hoy es ${today}
 
@@ -89,35 +99,39 @@ Debes responder siempre en español, en tono formal pero amigable, con emojis op
 
 INFORMACIÓN GENERAL DE LA TIENDA:
 
-**${config.storeName}**
-${config.storeDescription}
+**{storeName}**
+{storeDescription}
 
-**Horarios de atención:** ${config.businessHours}
-**Contacto:** ${config.contactInfo}
-**Dirección física:** ${config.physicalAddress}
+**Horarios de atención:** {businessHours}
+**Contacto:** {contactInfo}
+**Dirección física:** {physicalAddress}
 
 **Políticas:**
-- Política de Privacidad: ${config.privacyPolicyUrl}
-- Términos y Condiciones: ${config.termsConditionsUrl}
+- Política de Privacidad: {privacyPolicyUrl}
+- Términos y Condiciones: {termsConditionsUrl}
 
 **CAMBIOS Y DEVOLUCIONES:**
-- Política: ${config.returnPolicy}
-- Tiempo límite: ${config.returnTimeframe}
-- Condiciones: ${config.returnConditions}
-- Proceso: ${config.returnProcess}
+- Política: {returnPolicy}
+- Tiempo límite: {returnTimeframe}
+- Condiciones: {returnConditions}
+- Proceso: {returnProcess}
 
 **ENVÍOS Y ENTREGAS:**
-- Opciones: ${config.shippingOptions}
-- Tiempos: ${config.deliveryTimes}
-- Costos: ${config.shippingCosts}
-- Cobertura: ${config.coverageAreas}
+- Opciones: {shippingOptions}
+- Tiempos: {deliveryTimes}
+- Costos: {shippingCosts}
+- Cobertura: {coverageAreas}
 
 **OPCIONES DE PAGO:**
-- Métodos disponibles: ${config.paymentMethods}
-- Seguridad: ${config.paymentSecurity}
+- Métodos disponibles: {paymentMethods}
+- Seguridad: {paymentSecurity}
 
 **PREGUNTAS FRECUENTES:**
-${config.faqs.map(faq => `**${faq.question}**\n${faq.answer}`).join('\n\n')}
+{faqs}
+
+HERRAMIENTAS DISPONIBLES:
+
+${toolsList}
 
 FUNCIONES PRINCIPALES DEL AGENTE:
 
@@ -146,20 +160,60 @@ DIRECTRICES ADICIONALES:
 - Nunca reveles detalles técnicos internos
 - Si no tienes respuesta, admítelo amablemente y ofrece alternativas
 - Prioriza siempre satisfacción y venta
-- Solo responde temas relacionados a ${config.storeName} y catálogo de productos
+- Solo responde temas relacionados a {storeName} y catálogo de productos
 - Nunca realices tareas ajenas a atención directa al cliente
 - Al enviar links o enlaces, no incluyas captions con corchetes []. Solo envía el link, tal cual lo recibes, sin caracteres adicionales
 
-Recuerda: Tu objetivo es brindar el mejor servicio al cliente y representar profesionalmente a ${config.storeName}.`;
+Recuerda: Tu objetivo es brindar el mejor servicio al cliente y representar profesionalmente a {storeName}.`;
 };
 
-export const PromptEditor = ({ agentId, onChange }: PromptEditorProps) => {
+const renderPromptWithHighlighting = (prompt: string, config: typeof mockAgentConfig): JSX.Element => {
+  // Reemplazar variables con valores reales y aplicar colores
+  let highlightedPrompt = prompt
+    .replace(/{agentName}/g, `<span class="variable">${config.agentName}</span>`)
+    .replace(/{initialGreeting}/g, `<span class="variable">${config.initialGreeting}</span>`)
+    .replace(/{tone}/g, `<span class="variable">${config.tone}</span>`)
+    .replace(/{baseStyleDescription}/g, `<span class="variable">${BASE_STYLE_DESCRIPTIONS[config.baseStyle as keyof typeof BASE_STYLE_DESCRIPTIONS] || config.baseStyle}</span>`)
+    .replace(/{characteristicPhrases}/g, `<span class="variable">${config.characteristicPhrases}</span>`)
+    .replace(/{storeName}/g, `<span class="variable">${config.storeName}</span>`)
+    .replace(/{storeDescription}/g, `<span class="variable">${config.storeDescription}</span>`)
+    .replace(/{businessHours}/g, `<span class="variable">${config.businessHours}</span>`)
+    .replace(/{contactInfo}/g, `<span class="variable">${config.contactInfo}</span>`)
+    .replace(/{physicalAddress}/g, `<span class="variable">${config.physicalAddress}</span>`)
+    .replace(/{privacyPolicyUrl}/g, `<span class="variable">${config.privacyPolicyUrl}</span>`)
+    .replace(/{termsConditionsUrl}/g, `<span class="variable">${config.termsConditionsUrl}</span>`)
+    .replace(/{returnPolicy}/g, `<span class="variable">${config.returnPolicy}</span>`)
+    .replace(/{returnTimeframe}/g, `<span class="variable">${config.returnTimeframe}</span>`)
+    .replace(/{returnConditions}/g, `<span class="variable">${config.returnConditions}</span>`)
+    .replace(/{returnProcess}/g, `<span class="variable">${config.returnProcess}</span>`)
+    .replace(/{shippingOptions}/g, `<span class="variable">${config.shippingOptions}</span>`)
+    .replace(/{deliveryTimes}/g, `<span class="variable">${config.deliveryTimes}</span>`)
+    .replace(/{shippingCosts}/g, `<span class="variable">${config.shippingCosts}</span>`)
+    .replace(/{coverageAreas}/g, `<span class="variable">${config.coverageAreas}</span>`)
+    .replace(/{paymentMethods}/g, `<span class="variable">${config.paymentMethods}</span>`)
+    .replace(/{paymentSecurity}/g, `<span class="variable">${config.paymentSecurity}</span>`)
+    .replace(/{faqs}/g, `<span class="variable">${config.faqs.map(faq => `**${faq.question}**\n${faq.answer}`).join('\n\n')}</span>`);
+
+  return (
+    <div 
+      className="whitespace-pre-wrap font-mono text-sm"
+      dangerouslySetInnerHTML={{ 
+        __html: highlightedPrompt
+      }}
+    />
+  );
+};
+
+export const PromptEditor = ({ agentId, onChange, tools = [] }: PromptEditorProps) => {
   const [customPrompt, setCustomPrompt] = useState("");
   const [useSystemGenerated, setUseSystemGenerated] = useState(true);
   const [showPreview, setShowPreview] = useState(false);
   const { toast } = useToast();
 
-  const systemPrompt = generateSystemPrompt(mockAgentConfig);
+  // Filtrar solo herramientas habilitadas
+  const enabledTools = tools.filter(tool => tool.enabled);
+  
+  const systemPrompt = generateSystemPrompt(mockAgentConfig, enabledTools);
   const finalPrompt = useSystemGenerated ? systemPrompt : customPrompt;
 
   const copyPrompt = () => {
@@ -185,128 +239,173 @@ export const PromptEditor = ({ agentId, onChange }: PromptEditorProps) => {
   };
 
   return (
-    <Card className="h-fit bg-white/70 backdrop-blur-sm border-0 shadow-sm">
-      <CardHeader className="pb-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="text-lg font-semibold text-gray-900">
-              Prompt del Sistema
-            </CardTitle>
-            <CardDescription className="text-gray-600">
-              Prompt generado automáticamente o personalizado
-            </CardDescription>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={generateNewPrompt}
-              className="hover:bg-green-50"
-            >
-              <Sparkles className="h-4 w-4" />
-              Regenerar
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setShowPreview(!showPreview)}
-              className="hover:bg-blue-50"
-            >
-              {showPreview ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              {showPreview ? "Editor" : "Preview"}
-            </Button>
-            <Button size="sm" variant="outline" onClick={copyPrompt}>
-              <Copy className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Modo de prompt */}
-        <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
-          <div className="flex items-center gap-2">
-            <input
-              type="radio"
-              id="system-generated"
-              checked={useSystemGenerated}
-              onChange={() => setUseSystemGenerated(true)}
-              className="w-4 h-4 text-blue-600"
-            />
-            <label htmlFor="system-generated" className="text-sm font-medium">
-              Prompt generado automáticamente
-            </label>
-          </div>
-          <div className="flex items-center gap-2">
-            <input
-              type="radio"
-              id="custom-prompt"
-              checked={!useSystemGenerated}
-              onChange={() => setUseSystemGenerated(false)}
-              className="w-4 h-4 text-blue-600"
-            />
-            <label htmlFor="custom-prompt" className="text-sm font-medium">
-              Prompt personalizado
-            </label>
-          </div>
-        </div>
-
-        {/* Editor de prompt */}
-        <div className="space-y-2">
+    <>
+      <style jsx>{`
+        .variable {
+          background-color: #dbeafe;
+          color: #1d4ed8;
+          padding: 2px 4px;
+          border-radius: 4px;
+          font-weight: 500;
+        }
+        .tool-enabled {
+          background-color: #dcfce7;
+          color: #16a34a;
+          padding: 2px 4px;
+          border-radius: 4px;
+          font-weight: 500;
+        }
+      `}</style>
+      
+      <Card className="h-fit bg-white/70 backdrop-blur-sm border-0 shadow-sm">
+        <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
-            <label className="text-sm font-medium text-gray-700">
-              {showPreview ? "Vista previa del prompt" : useSystemGenerated ? "Prompt del sistema" : "Prompt personalizado"}
-            </label>
+            <div>
+              <CardTitle className="text-lg font-semibold text-gray-900">
+                Prompt del Sistema
+              </CardTitle>
+              <CardDescription className="text-gray-600">
+                Prompt generado automáticamente o personalizado
+              </CardDescription>
+            </div>
             <div className="flex items-center gap-2">
-              <Badge variant={useSystemGenerated ? "default" : "secondary"}>
-                {useSystemGenerated ? "Auto-generado" : "Personalizado"}
-              </Badge>
-              <div className="text-xs text-gray-500">
-                {finalPrompt.length} caracteres
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={generateNewPrompt}
+                className="hover:bg-green-50"
+              >
+                <Sparkles className="h-4 w-4" />
+                Regenerar
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setShowPreview(!showPreview)}
+                className="hover:bg-blue-50"
+              >
+                {showPreview ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {showPreview ? "Editor" : "Preview"}
+              </Button>
+              <Button size="sm" variant="outline" onClick={copyPrompt}>
+                <Copy className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Modo de prompt */}
+          <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+            <div className="flex items-center gap-2">
+              <input
+                type="radio"
+                id="system-generated"
+                checked={useSystemGenerated}
+                onChange={() => setUseSystemGenerated(true)}
+                className="w-4 h-4 text-blue-600"
+              />
+              <label htmlFor="system-generated" className="text-sm font-medium">
+                Prompt generado automáticamente
+              </label>
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="radio"
+                id="custom-prompt"
+                checked={!useSystemGenerated}
+                onChange={() => setUseSystemGenerated(false)}
+                className="w-4 h-4 text-blue-600"
+              />
+              <label htmlFor="custom-prompt" className="text-sm font-medium">
+                Prompt personalizado
+              </label>
+            </div>
+          </div>
+
+          {/* Editor de prompt */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium text-gray-700">
+                {showPreview ? "Vista previa del prompt" : useSystemGenerated ? "Prompt del sistema" : "Prompt personalizado"}
+              </label>
+              <div className="flex items-center gap-2">
+                <Badge variant={useSystemGenerated ? "default" : "secondary"}>
+                  {useSystemGenerated ? "Auto-generado" : "Personalizado"}
+                </Badge>
+                <div className="text-xs text-gray-500">
+                  {finalPrompt.length} caracteres
+                </div>
+              </div>
+            </div>
+            
+            {showPreview && useSystemGenerated ? (
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 min-h-[400px] max-h-[600px] overflow-y-auto">
+                {renderPromptWithHighlighting(finalPrompt, mockAgentConfig)}
+              </div>
+            ) : showPreview || useSystemGenerated ? (
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 min-h-[400px] max-h-[600px] overflow-y-auto font-mono text-sm whitespace-pre-wrap">
+                {finalPrompt}
+              </div>
+            ) : (
+              <Textarea
+                value={customPrompt}
+                onChange={(e) => handleCustomPromptChange(e.target.value)}
+                placeholder="Escribe tu prompt personalizado aquí..."
+                className="min-h-[400px] font-mono text-sm resize-none"
+              />
+            )}
+          </div>
+
+          {/* Legend for variables */}
+          {showPreview && useSystemGenerated && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <div className="flex items-start gap-2">
+                <FileText className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                <div className="text-xs text-blue-800">
+                  <p className="font-medium mb-1">Leyenda de colores:</p>
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="inline-block w-4 h-4 bg-blue-100 border border-blue-300 rounded"></span>
+                      <span>Variables editables en Prompt Blocks</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="inline-block w-4 h-4 bg-green-100 border border-green-300 rounded"></span>
+                      <span>Herramientas activas ({enabledTools.length} de {tools.length})</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Tips */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <div className="flex items-start gap-2">
+              <FileText className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+              <div className="text-xs text-blue-800">
+                <p className="font-medium mb-1">
+                  {useSystemGenerated ? "Prompt automático:" : "Consejos para un prompt personalizado:"}
+                </p>
+                {useSystemGenerated ? (
+                  <p className="text-blue-700">
+                    Este prompt se genera automáticamente basado en la configuración del agente. 
+                    Las variables en azul se editan en "Configuración del Agente" y las herramientas 
+                    se activan/desactivan en "Herramientas".
+                  </p>
+                ) : (
+                  <ul className="space-y-1 text-blue-700">
+                    <li>• Define claramente el rol y objetivos del agente</li>
+                    <li>• Incluye información específica de tu tienda</li>
+                    <li>• Especifica el tono y estilo de comunicación</li>
+                    <li>• Incluye ejemplos de respuestas deseadas</li>
+                    <li>• Considera los flujos de trabajo específicos</li>
+                  </ul>
+                )}
               </div>
             </div>
           </div>
-          
-          {showPreview || useSystemGenerated ? (
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 min-h-[400px] font-mono text-sm whitespace-pre-wrap">
-              {finalPrompt}
-            </div>
-          ) : (
-            <Textarea
-              value={customPrompt}
-              onChange={(e) => handleCustomPromptChange(e.target.value)}
-              placeholder="Escribe tu prompt personalizado aquí..."
-              className="min-h-[400px] font-mono text-sm resize-none"
-            />
-          )}
-        </div>
-
-        {/* Tips */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-          <div className="flex items-start gap-2">
-            <FileText className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
-            <div className="text-xs text-blue-800">
-              <p className="font-medium mb-1">
-                {useSystemGenerated ? "Prompt automático:" : "Consejos para un prompt personalizado:"}
-              </p>
-              {useSystemGenerated ? (
-                <p className="text-blue-700">
-                  Este prompt se genera automáticamente basado en la configuración del agente. 
-                  Se actualiza cuando cambias la información en las secciones de configuración.
-                  Incluye todas las herramientas y flujos de trabajo reales del sistema.
-                </p>
-              ) : (
-                <ul className="space-y-1 text-blue-700">
-                  <li>• Define claramente el rol y objetivos del agente</li>
-                  <li>• Incluye información específica de tu tienda</li>
-                  <li>• Especifica el tono y estilo de comunicación</li>
-                  <li>• Incluye ejemplos de respuestas deseadas</li>
-                  <li>• Considera los flujos de trabajo específicos</li>
-                </ul>
-              )}
-            </div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </>
   );
 };
