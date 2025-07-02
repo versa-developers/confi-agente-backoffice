@@ -213,10 +213,10 @@ const renderPromptWithHighlighting = (prompt: string, config: typeof mockAgentCo
 };
 
 const renderPromptWithVariableHighlighting = (prompt: string, enabledTools: Tool[]): JSX.Element => {
-  // Crear lista de herramientas para reemplazo
+  // Crear lista de herramientas para reemplazo con color azul
   const toolsList = enabledTools.length > 0 
-    ? enabledTools.map(tool => `- ${tool.name}`).join('\n')
-    : '- No hay herramientas disponibles';
+    ? enabledTools.map(tool => `<span class="tool-item">- ${tool.name}</span>`).join('\n')
+    : '<span class="tool-item">- No hay herramientas disponibles</span>';
 
   // Highlight variables in the raw prompt text (for editor view)
   let highlightedPrompt = prompt.replace(
@@ -224,10 +224,10 @@ const renderPromptWithVariableHighlighting = (prompt: string, enabledTools: Tool
     (match) => `<span class="variable-placeholder">${match}</span>`
   );
 
-  // Replace tools list with highlighted version
+  // Replace tools list with highlighted version (blue color)
   highlightedPrompt = highlightedPrompt.replace(
     /\$\{toolsList\}/g, 
-    `<span class="tools-list">${toolsList}</span>`
+    `<span class="tools-section">${toolsList}</span>`
   );
 
   return (
@@ -317,6 +317,15 @@ export const PromptEditor = ({ agentId, onChange, tools = [] }: PromptEditorProp
         .tools-list {
           color: #2563eb;
           font-weight: 500;
+        }
+        .tools-section {
+          color: #2563eb;
+          font-weight: 500;
+        }
+        .tool-item {
+          color: #2563eb;
+          font-weight: 500;
+          display: block;
         }
         .tool-enabled {
           background-color: #dcfce7;
