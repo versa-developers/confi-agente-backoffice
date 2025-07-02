@@ -14,7 +14,7 @@ interface Tool {
   description: string;
   type: "native" | "custom";
   enabled: boolean;
-  category: "commerce" | "support" | "analytics" | "integration";
+  category: "products" | "cart" | "orders" | "support" | "media" | "policies";
 }
 
 interface ToolsManagerProps {
@@ -22,57 +22,149 @@ interface ToolsManagerProps {
   onChange: () => void;
 }
 
-const mockTools: Tool[] = [
+const nativeTools: Tool[] = [
   {
-    id: "1",
-    name: "Crear Carrito",
-    description: "Permite crear carritos de compra para los clientes",
+    id: "buscar_informacion_sobre_productos",
+    name: "Buscar Información de Productos",
+    description: "Busca información detallada de productos específicos o generales",
     type: "native",
     enabled: true,
-    category: "commerce"
+    category: "products"
   },
   {
-    id: "2",
-    name: "Consultar Orden",
-    description: "Busca información sobre órdenes existentes",
+    id: "buscar_productos_mas_populares",
+    name: "Productos Más Populares",
+    description: "Muestra los productos más populares o vendidos de la tienda",
     type: "native",
     enabled: true,
-    category: "commerce"
+    category: "products"
   },
   {
-    id: "3",
-    name: "Agendar Cita",
-    description: "Programa citas con el equipo comercial",
+    id: "actualizar_descripcion_de_productos",
+    name: "Descripción Completa de Productos",
+    description: "Obtiene la descripción completa y detallada de un producto",
+    type: "native",
+    enabled: true,
+    category: "products"
+  },
+  {
+    id: "generar_carro_de_compras",
+    name: "Generar Carrito de Compras",
+    description: "Crea un carrito de compras con los productos seleccionados",
+    type: "native",
+    enabled: true,
+    category: "cart"
+  },
+  {
+    id: "agregar_variante_de_producto_al_carro",
+    name: "Agregar al Carrito Existente",
+    description: "Agrega variantes de productos a un carrito existente",
+    type: "native",
+    enabled: true,
+    category: "cart"
+  },
+  {
+    id: "check_global_discounts",
+    name: "Verificar Descuentos Globales",
+    description: "Consulta descuentos de envío y promociones generales",
     type: "native",
     enabled: false,
+    category: "cart"
+  },
+  {
+    id: "obtener_estado_de_envio_de_la_compra",
+    name: "Estado de Envío",
+    description: "Consulta el estado de envío de una compra por número de orden",
+    type: "native",
+    enabled: true,
+    category: "orders"
+  },
+  {
+    id: "buscar_estado_de_orden_por_email_y_monto",
+    name: "Buscar Orden por Email",
+    description: "Busca una orden por email y monto cuando no se conoce el número",
+    type: "native",
+    enabled: true,
+    category: "orders"
+  },
+  {
+    id: "obtener_seguimiento_de_compra",
+    name: "Seguimiento de Compra",
+    description: "Obtiene seguimiento detallado con información del courier",
+    type: "native",
+    enabled: false,
+    category: "orders"
+  },
+  {
+    id: "generar_ticket",
+    name: "Generar Ticket de Soporte",
+    description: "Crea tickets para issues que no puede resolver directamente",
+    type: "native",
+    enabled: true,
     category: "support"
   },
   {
-    id: "4",
-    name: "Webhook Inventory",
-    description: "Consulta inventario en sistema externo",
-    type: "custom",
+    id: "revisar_estado_ticket",
+    name: "Estado de Ticket",
+    description: "Verifica el estado actual de un ticket de soporte",
+    type: "native",
     enabled: true,
-    category: "integration"
+    category: "support"
+  },
+  {
+    id: "pausar_conversacion_y_generar_alerta_humana",
+    name: "Alerta para Intervención Humana",
+    description: "Pausa la conversación y genera alerta para atención humana",
+    type: "native",
+    enabled: true,
+    category: "support"
+  },
+  {
+    id: "agregar_media_para_enviar",
+    name: "Envío de Imágenes",
+    description: "Envía imágenes de productos a los clientes",
+    type: "native",
+    enabled: true,
+    category: "media"
+  },
+  {
+    id: "buscar_informacion_sobre_politicas_generales",
+    name: "Políticas Generales",
+    description: "Consulta información sobre políticas de la tienda",
+    type: "native",
+    enabled: true,
+    category: "policies"
+  },
+  {
+    id: "buscar_preguntas_frecuentes",
+    name: "Preguntas Frecuentes",
+    description: "Busca respuestas en la base de preguntas frecuentes",
+    type: "native",
+    enabled: true,
+    category: "policies"
   }
 ];
 
 const categoryColors = {
-  commerce: "bg-green-100 text-green-800",
-  support: "bg-blue-100 text-blue-800",
-  analytics: "bg-purple-100 text-purple-800",
-  integration: "bg-orange-100 text-orange-800"
+  products: "bg-blue-100 text-blue-800",
+  cart: "bg-green-100 text-green-800",
+  orders: "bg-orange-100 text-orange-800",
+  support: "bg-red-100 text-red-800",
+  media: "bg-purple-100 text-purple-800",
+  policies: "bg-gray-100 text-gray-800"
 };
 
 const categoryLabels = {
-  commerce: "Comercio",
+  products: "Productos",
+  cart: "Carrito",
+  orders: "Órdenes",
   support: "Soporte",
-  analytics: "Analytics",
-  integration: "Integración"
+  media: "Media",
+  policies: "Políticas"
 };
 
 export const ToolsManager = ({ agentId, onChange }: ToolsManagerProps) => {
-  const [tools, setTools] = useState<Tool[]>(mockTools);
+  const [tools, setTools] = useState<Tool[]>(nativeTools);
   const [showCustomToolModal, setShowCustomToolModal] = useState(false);
   const { toast } = useToast();
 
@@ -96,7 +188,7 @@ export const ToolsManager = ({ agentId, onChange }: ToolsManagerProps) => {
       description: toolData.description,
       type: "custom",
       enabled: true,
-      category: "integration"
+      category: "support"
     };
     
     setTools([...tools, newTool]);
