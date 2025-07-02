@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Plus, Trash2, User, Store, Shield, RefreshCw, Truck, CreditCard, HelpCircle, Maximize } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -491,8 +492,8 @@ export const PromptBlocksEditor = ({ agentId, onChange }: PromptBlocksEditorProp
             </CardDescription>
           </div>
           
-          <Drawer>
-            <DrawerTrigger asChild>
+          <Sheet>
+            <SheetTrigger asChild>
               <Button 
                 size="sm" 
                 variant="outline" 
@@ -501,18 +502,18 @@ export const PromptBlocksEditor = ({ agentId, onChange }: PromptBlocksEditorProp
               >
                 <Maximize className="h-4 w-4" />
               </Button>
-            </DrawerTrigger>
-            <DrawerContent className="max-h-[90vh]">
-              <DrawerHeader>
-                <DrawerTitle className="text-xl font-semibold">
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[800px] sm:max-w-[800px] overflow-y-auto">
+              <SheetHeader>
+                <SheetTitle className="text-xl font-semibold">
                   Configuración Completa del Agente
-                </DrawerTitle>
-              </DrawerHeader>
-              <div className="px-6 pb-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+                </SheetTitle>
+              </SheetHeader>
+              <div className="mt-6">
                 <ConfigurationContent />
               </div>
-            </DrawerContent>
-          </Drawer>
+            </SheetContent>
+          </Sheet>
         </div>
       </CardHeader>
       <CardContent>
